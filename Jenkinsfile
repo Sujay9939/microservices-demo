@@ -15,44 +15,29 @@ pipeline {
             }
         }
 
-        stage('Connect to EKS') {
-           steps {
-               withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
-
-                   sh '''
-                   aws sts get-caller-identity
-
-                   aws eks update-kubeconfig \
-                     --region eu-north-1 \
-                     --name wonderful-rock-mountain
-
-                  kubectl get nodes
-                  '''
-              }
-          }
-        }
-
         stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    kubectl apply -f ./release/kubernetes-manifests.yaml
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh '''
-                    kubectl get pods -A
-                    kubectl get svc -A
-
-                    kubectl rollout status deployment/frontend \
-                    -n default \
-                    --timeout=300s
-                '''
-            }
+    steps {
+        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+            sh '''
+            kubectl apply -f ./release/kubernetes-manifests.yaml
+            '''
         }
     }
+}
+
+stage('Verify Deployment') {
+    steps {
+        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+            sh '''
+            kubectl get pods -A
+            kubectl get svc -A
+
+            kubectl rollout status deployment/frontend \
+            --timeout=300s
+            '''
+        }
+    }
+}
 
     post {
         success {
