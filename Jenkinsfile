@@ -16,17 +16,20 @@ pipeline {
         }
 
         stage('Connect to EKS') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-                    sh """
-                        aws eks update-kubeconfig \
-                        --region ${AWS_REGION} \
-                        --name ${EKS_CLUSTER}
+           steps {
+               withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
 
-                        kubectl get nodes
-                    """
-                }
-            }
+                   sh '''
+                   aws sts get-caller-identity
+
+                   aws eks update-kubeconfig \
+                     --region eu-north-1 \
+                     --name wonderful-rock-mountain
+
+                  kubectl get nodes
+                  '''
+              }
+          }
         }
 
         stage('Deploy to Kubernetes') {
