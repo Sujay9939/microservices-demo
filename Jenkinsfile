@@ -19,11 +19,11 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh """
-                    aws eks update-kubeconfig \
-                      --region ${AWS_REGION} \
-                      --name ${EKS_CLUSTER}
+                        aws eks update-kubeconfig \
+                        --region ${AWS_REGION} \
+                        --name ${EKS_CLUSTER}
 
-                    kubectl get nodes
+                        kubectl get nodes
                     """
                 }
             }
@@ -32,7 +32,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                kubectl apply -f ./release/kubernetes-manifests.yaml
+                    kubectl apply -f ./release/kubernetes-manifests.yaml
                 '''
             }
         }
@@ -40,10 +40,12 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
-                kubectl rollout status deployment/frontend --timeout=300s
+                    kubectl get pods -A
+                    kubectl get svc -A
 
-                kubectl get pods
-                kubectl get svc
+                    kubectl rollout status deployment/frontend \
+                    -n default \
+                    --timeout=300s
                 '''
             }
         }
